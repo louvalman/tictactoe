@@ -16,7 +16,7 @@ let gameboard = (function () {
   let rows = 3;
   let columns = 3;
   let board = [];
-  // for loop
+
   for (let i = 0; i < rows; i++) {
     let row = [];
     console.log(`row #${i + 1} created`);
@@ -40,9 +40,8 @@ let gameboard = (function () {
 })();
 
 // Dictate how the game is played
-
 let gamestate = (function () {
-  // Declare players and a way to fetch them
+  // Create players and a way to fetch them
   let player1 = createPlayer('Player One', 1);
   let player2 = createPlayer('Player Two', 2);
 
@@ -60,7 +59,7 @@ let gamestate = (function () {
 
   let startingPlayer = playerStart(player1, player2);
 
-  // Start game and set playerTurn to starting player
+  // Set playerTurn to starting player, create a function that changes the turn as well as a way to fetch whose turn it is
   let playerTurn = startingPlayer;
 
   function changeTurn() {
@@ -79,28 +78,94 @@ let gamestate = (function () {
     }
   }
 
+  // Find out if a player has won - their token either fills a row, a column or one of the diagonals
   function checkForWin() {
-    let winner = undefined;
+    let winner = null;
+    const board = gameboard.board;
+
+    // Check rows
     for (let i = 0; i < gameboard.rows; i++) {
-      let playerOneWinCounter = 0;
-      let playerTwoWinCounter = 0;
-      if (gameboard.board[i][0] === 1) {
-        playerOneWinCounter++;
-      } else if (gameboard.board[i][0] === 2) {
-        playerTwoWinCounter++;
+      if (
+        board[i][0] === player1.token &&
+        board[i][1] === player1.token &&
+        board[i][2] === player1.token
+      ) {
+        winner = player1;
+        return winner;
+      } else if (
+        board[i][0] === player2.token &&
+        board[i][1] === player2.token &&
+        board[i][2] === player2.token
+      ) {
+        winner = player2;
+        return winner;
       }
+    }
+    // Check columns
+    for (let j = 0; j < gameboard.columns; j++) {
+      if (
+        board[0][j] === player1.token &&
+        board[1][j] === player1.token &&
+        board[2][j] === player1.token
+      ) {
+        winner = player1;
+        return winner;
+      } else if (
+        board[0][j] === player2.token &&
+        board[1][j] === player2.token &&
+        board[2][j] === player2.token
+      ) {
+        winner = player2;
+        return winner;
+      }
+    }
+    // Check diagonals (top left to bottom right and top right to bottom left)
+    if (
+      board[0][0] === player1.token &&
+      board[1][1] === player1.token &&
+      board[2][2] === player1.token
+    ) {
+      winner = player1;
+      return winner;
+    } else if (
+      board[0][0] === player2.token &&
+      board[1][1] === player2.token &&
+      board[2][2] === player2.token
+    ) {
+      winner = player2;
+      return winner;
+    }
+
+    if (
+      board[0][2] === player1.token &&
+      board[1][1] === player1.token &&
+      board[2][0] === player1.token
+    ) {
+      winner = player1;
+      return winner;
+    } else if (
+      board[0][2] === player2.token &&
+      board[1][1] === player2.token &&
+      board[2][0] === player2.token
+    ) {
+      winner = player2;
+      return winner;
+    }
+
+    // Check for tie
+    let isBoardFull = true;
+    tieLoop: for (let i = 0; i < gameboard.rows; i++) {
       for (let j = 0; j < gameboard.columns; j++) {
-        if (gameboard.board[0][j] === 1) {
-          playerOneWinCounter++;
-        } else if (gameboard.board[0][j] === 2) {
-          playerTwoWinCounter++;
+        if (board[i][j] === 0) {
+          isBoardFull = false;
+          break tieLoop;
         }
       }
-      if (playerOneWinCounter === 3) {
-        winner = player1;
-      } else if (playerTwoWinCounter === 3) {
-        winner = player2;
-      }
+    }
+
+    // If winner has not been found yet, and board is full, then game is declared a tie
+    if (isBoardFull === true) {
+      winner = 'Tie';
     }
     return winner;
   }
@@ -114,6 +179,35 @@ let gamestate = (function () {
     checkForWin,
   };
 })();
+
+let displayController = (function () {
+  function renderBoard() {
+    let gameBoard = document.getElementById('game-board');
+    for (let i = 0; i < gameboard.rows; i++) {
+      for (let j = 0; j < gameboard.columns; j++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.row = i;
+        cell.dataset.column = j;
+        gameBoard.appendChild(cell);
+      }
+    }
+  }
+
+  function updateCell(row, col, token) {}
+
+  function displayMessage(message) {}
+
+  function handleClick(e) {}
+
+  return {
+    renderBoard,
+    updateCell,
+    displayMessage,
+  };
+})();
+
+displayController.renderBoard();
 
 console.log(gamestate.startingPlayer);
 gamestate.changeTurn();
