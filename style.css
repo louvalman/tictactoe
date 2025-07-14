@@ -1,3 +1,38 @@
+:root {
+    font-family: "Founders Grotesk", sans-serif;
+    background-color: #B80C09;
+    --text-color: #F1F1F1;
+    --transition-cubic: all 0.3s cubic-bezier(0.65, 0.3, 0.73, 0.76);
+    --box-shadow-cards: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+
 * {
-    background: #121212;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+}
+
+.game-container {
+    height: 100vh;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap:16px;
+    margin-top: -80px;
+}
+
+h1 {
+    font-weight: normal !important;
+}
+
+#game-board {
+    display: grid;
+    grid-template:75px 75px 75px / 75px 75px 75px;
+    border: 1px solid black;
+}
+
+.cell {
+    border: 1px solid black;
 }

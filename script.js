@@ -198,16 +198,29 @@ let displayController = (function () {
 
   function displayMessage(message) {}
 
-  function handleClick(e) {}
+  function handleClick() {
+    let cells = document.getElementsByClassName('cell');
+
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].addEventListener('click', function (e) {
+        console.log('hey');
+      });
+    }
+  }
 
   return {
     renderBoard,
     updateCell,
     displayMessage,
+    handleClick,
   };
 })();
 
+// Render the board on page load
 displayController.renderBoard();
+
+// Activate event listeners on page load
+displayController.handleClick();
 
 console.log(gamestate.startingPlayer);
 gamestate.changeTurn();
