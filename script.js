@@ -42,8 +42,8 @@ let gameboard = (function () {
 // Dictate how the game is played
 let gamestate = (function () {
   // Create players and a way to fetch them
-  let player1 = createPlayer('Player One', 1);
-  let player2 = createPlayer('Player Two', 2);
+  let player1 = createPlayer('player one', 1);
+  let player2 = createPlayer('player two', 2);
 
   function getPlayers() {
     return {
@@ -189,22 +189,53 @@ let displayController = (function () {
         cell.classList.add('cell');
         cell.dataset.row = i;
         cell.dataset.column = j;
+        cell.dataset.token = '';
+        cell.textContent = '';
         gameBoard.appendChild(cell);
+        cell.addEventListener('click', handleClick);
       }
     }
+    gameBoard.classList.add('game-board');
   }
 
   function updateCell(row, col, token) {}
 
-  function displayMessage(message) {}
+  function displayMessage(message) {
+    const messageDisplay = document.getElementById('message');
+    messageDisplay.textContent = message;
+  }
 
-  function handleClick() {
-    let cells = document.getElementsByClassName('cell');
+  // Place mark when square is clicked, place current players token in the row/column of the clicked square, then change turn and checkForWin.
+  function handleClick(e) {
+    const currentToken = gamestate.getPlayerTurn().token;
+    const row = parseInt(e.target.dataset.row);
+    const column = parseInt(e.target.dataset.column);
 
-    for (let i = 0; i < cells.length; i++) {
-      cells[i].addEventListener('click', function (e) {
-        console.log('hey');
-      });
+    if (gameboard.board[row][column] == 0) {
+      e.target.dataset.token = currentToken;
+
+      console.log(parseInt(e.target.dataset.column));
+
+      gameboard.placeMark(
+        e.target.dataset.row,
+        e.target.dataset.column,
+        currentToken
+      );
+
+      gamestate.changeTurn();
+
+      const winner = gamestate.checkForWin();
+
+      if (winner == null) {
+        displayController.displayMessage(
+          `${gamestate.getPlayerTurn().name}'s turn`
+        );
+      } else if (winner == 'Tie') {
+        displayController.displayMessage('you tied it up!');
+      } else {
+        displayController.displayMessage(`${winner.name} wins!`);
+      }
+      console.log(gamestate.checkForWin());
     }
   }
 
@@ -216,12 +247,14 @@ let displayController = (function () {
   };
 })();
 
-// Render the board on page load
-displayController.renderBoard();
+// Let the startBtn render the board and show the current player's turn
+const startBtn = document.getElementById('start-game');
 
-// Activate event listeners on page load
-displayController.handleClick();
+startBtn.addEventListener('click', function () {
+  displayController.renderBoard();
+  startBtn.remove();
+  displayController.displayMessage(`${gamestate.startingPlayer.name}'s turn`);
+});
 
+// Log the starting player
 console.log(gamestate.startingPlayer);
-gamestate.changeTurn();
-console.log(gamestate.getPlayerTurn());

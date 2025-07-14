@@ -1,7 +1,7 @@
 :root {
     font-family: "Founders Grotesk", sans-serif;
     background-color: #B80C09;
-    --text-color: #F1F1F1;
+    --text-color:#F3F7F0;
     --transition-cubic: all 0.3s cubic-bezier(0.65, 0.3, 0.73, 0.76);
     --box-shadow-cards: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
@@ -19,7 +19,7 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap:16px;
+    gap:24px;
     margin-top: -80px;
 }
 
@@ -27,12 +27,52 @@ h1 {
     font-weight: normal !important;
 }
 
-#game-board {
+h1.title-header {
+    text-align: center;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap:16px;
+}
+
+#start-game {
+    font-weight: normal !important;
+    font-size: 24px;
+    padding: 8px 8px;
+    border: 1px solid var(--text-color);
+    border-radius: 8px;
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1) 0.33s;
+    &:hover {
+        color:lightgray;
+        border-color: lightgray;
+    }
+}
+
+#message {
+    font-weight: lighter;
+    font-size: 18px;
+}
+
+.game-board {
     display: grid;
     grid-template:75px 75px 75px / 75px 75px 75px;
-    border: 1px solid black;
+    border: 1px solid var(--text-color);
 }
 
 .cell {
-    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--text-color);
+}
+
+.cell[data-token="1"]::before {
+    content: "🍅";
+    font-size: 32px;
+
+}
+
+.cell[data-token="2"]::before {
+    content: "🍽️";
+    font-size: 32px;
 }
