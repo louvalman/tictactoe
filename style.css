@@ -13,7 +13,7 @@
     color: var(--text-color);
 }
 
-.game-container {
+#game-container {
     height: 100vh;
     display:flex;
     align-items: center;
@@ -35,7 +35,7 @@ h1.title-header {
     gap:16px;
 }
 
-#start-game {
+.button {
     font-weight: normal !important;
     font-size: 24px;
     padding: 8px 8px;

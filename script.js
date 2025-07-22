@@ -214,8 +214,6 @@ let displayController = (function () {
     if (gameboard.board[row][column] == 0) {
       e.target.dataset.token = currentToken;
 
-      console.log(parseInt(e.target.dataset.column));
-
       gameboard.placeMark(
         e.target.dataset.row,
         e.target.dataset.column,
@@ -235,7 +233,6 @@ let displayController = (function () {
       } else {
         displayController.displayMessage(`${winner.name} wins!`);
       }
-      console.log(gamestate.checkForWin());
     }
   }
 
@@ -248,12 +245,25 @@ let displayController = (function () {
 })();
 
 // Let the startBtn render the board and show the current player's turn
+const gameContainer = document.getElementById('game-container');
 const startBtn = document.getElementById('start-game');
+const startMsg = document.getElementById('start-message');
 
 startBtn.addEventListener('click', function () {
-  displayController.renderBoard();
   startBtn.remove();
-  displayController.displayMessage(`${gamestate.startingPlayer.name}'s turn`);
+  startMsg.remove();
+
+  const continueBtn = document.createElement('div');
+  gameContainer.appendChild(continueBtn);
+  continueBtn.textContent = 'continue';
+  continueBtn.classList.add('button');
+  continueBtn.setAttribute('id', 'continue-button');
+
+  continueBtn.addEventListener('click', function () {
+    displayController.renderBoard();
+    continueBtn.remove();
+    displayController.displayMessage(`${gamestate.startingPlayer.name}'s turn`);
+  });
 });
 
 // Log the starting player
