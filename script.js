@@ -41,7 +41,6 @@ let gameboard = (function () {
 
 // Dictate how the game is played
 let gamestate = (function () {
-  // Create players and a way to fetch them
   let player1 = createPlayer('player one', 1);
   let player2 = createPlayer('player two', 2);
 
@@ -50,6 +49,11 @@ let gamestate = (function () {
       playerOne: player1,
       playerTwo: player2,
     };
+  }
+
+  function setPlayerNames(name1, name2) {
+    player1.name = name1;
+    player2.name = name2;
   }
 
   // Roll for starting player, and save winner in startingPlayer variable
@@ -174,6 +178,7 @@ let gamestate = (function () {
   return {
     startingPlayer,
     getPlayers,
+    setPlayerNames,
     changeTurn,
     getPlayerTurn,
     checkForWin,
@@ -244,7 +249,7 @@ let displayController = (function () {
   };
 })();
 
-// Let the startBtn render the board and show the current player's turn
+// When game is started, remove start btn and msg, and show inputs for player names - then render board after continue is pressed
 const gameContainer = document.getElementById('game-container');
 const startBtn = document.getElementById('start-game');
 const startMsg = document.getElementById('start-message');
@@ -253,6 +258,44 @@ startBtn.addEventListener('click', function () {
   startBtn.remove();
   startMsg.remove();
 
+  const nameContainer = document.createElement('div');
+  gameContainer.appendChild(nameContainer);
+  nameContainer.classList.add('name-container');
+
+  const inputContainerOne = document.createElement('div');
+  nameContainer.appendChild(inputContainerOne);
+  inputContainerOne.classList.add('input-container');
+
+  const getNameOneLabel = document.createElement('label');
+  inputContainerOne.appendChild(getNameOneLabel);
+  getNameOneLabel.classList.add('input-label');
+  getNameOneLabel.setAttribute('for', 'name-one');
+  getNameOneLabel.textContent = 'Player one name';
+
+  const getNameOne = document.createElement('input');
+  inputContainerOne.appendChild(getNameOne);
+  getNameOne.classList.add('input-field');
+  getNameOne.setAttribute('type', 'text');
+  getNameOne.setAttribute('name', 'name-one');
+  getNameOne.setAttribute('id', 'name-one');
+
+  const inputContainerTwo = document.createElement('div');
+  nameContainer.appendChild(inputContainerTwo);
+  inputContainerTwo.classList.add('input-container');
+
+  const getNameTwoLabel = document.createElement('label');
+  inputContainerTwo.appendChild(getNameTwoLabel);
+  getNameTwoLabel.classList.add('input-label');
+  getNameTwoLabel.setAttribute('for', 'name-two');
+  getNameTwoLabel.textContent = 'Player two name';
+
+  const getNameTwo = document.createElement('input');
+  inputContainerTwo.appendChild(getNameTwo);
+  getNameTwo.classList.add('input-field');
+  getNameTwo.setAttribute('type', 'text');
+  getNameTwo.setAttribute('name', 'name-two');
+  getNameTwo.setAttribute('id', 'name-two');
+
   const continueBtn = document.createElement('div');
   gameContainer.appendChild(continueBtn);
   continueBtn.textContent = 'continue';
@@ -260,7 +303,9 @@ startBtn.addEventListener('click', function () {
   continueBtn.setAttribute('id', 'continue-button');
 
   continueBtn.addEventListener('click', function () {
+    gamestate.setPlayerNames(getNameOne.value, getNameTwo.value);
     displayController.renderBoard();
+    nameContainer.remove();
     continueBtn.remove();
     displayController.displayMessage(`${gamestate.startingPlayer.name}'s turn`);
   });
