@@ -171,7 +171,35 @@ let gamestate = (function () {
     if (isBoardFull === true) {
       winner = 'Tie';
     }
+
     return winner;
+  }
+
+  // Get token of current player, place token on internal gamestate, checkForWin, if game isn't over changeTurns
+  function playRound(row, column) {
+    const currentToken = getPlayerTurn().token;
+    gameboard.placeMark(row, column, currentToken);
+
+    const gameResult = checkForWin();
+
+    if (gameResult === null) {
+      changeTurn();
+    }
+
+    return gameResult;
+  }
+
+  // Track the score
+  let scores = { player1: 0, player2: 0 };
+
+  function updateScores(outcome) {
+    if (outcome !== 'Tie' && outcome !== null) {
+      if (outcome.token === 1) {
+        scores.player1++;
+      } else if (outcome.token === 2) {
+        scores.player2++;
+      }
+    }
   }
 
   // Make sure gamestate exposes needed variables and functions
@@ -182,9 +210,13 @@ let gamestate = (function () {
     changeTurn,
     getPlayerTurn,
     checkForWin,
+    playRound,
+    scores,
+    updateScores,
   };
 })();
 
+// Show the board in the UI when the game is started
 let displayController = (function () {
   function renderBoard() {
     let gameBoard = document.getElementById('game-board');
@@ -203,49 +235,51 @@ let displayController = (function () {
     gameBoard.classList.add('game-board');
   }
 
-  function updateCell(row, col, token) {}
-
   function displayMessage(message) {
     const messageDisplay = document.getElementById('message');
     messageDisplay.textContent = message;
   }
 
-  // Place mark when square is clicked, place current players token in the row/column of the clicked square, then change turn and checkForWin.
+  // Read coordinates, check if cell is empty in order to run playRound logic (getToken of player whose turn it is, place it in internal gamestate and checkForWin), then update UI/DOM with token ID on html element of targeted cell which CSS renders to icon. Display message based on outcome.
   function handleClick(e) {
-    const currentToken = gamestate.getPlayerTurn().token;
     const row = parseInt(e.target.dataset.row);
     const column = parseInt(e.target.dataset.column);
 
     if (gameboard.board[row][column] == 0) {
-      e.target.dataset.token = currentToken;
+      //
+      const outcome = gamestate.playRound(row, column);
 
-      gameboard.placeMark(
-        e.target.dataset.row,
-        e.target.dataset.column,
-        currentToken
-      );
+      e.target.dataset.token = gameboard.board[row][column];
 
-      gamestate.changeTurn();
-
-      const winner = gamestate.checkForWin();
-
-      if (winner == null) {
+      if (outcome == null) {
         displayController.displayMessage(
           `${gamestate.getPlayerTurn().name}'s turn`
         );
-      } else if (winner == 'Tie') {
+      } else if (outcome == 'Tie') {
         displayController.displayMessage('you tied it up!');
       } else {
-        displayController.displayMessage(`${winner.name} wins!`);
+        displayController.displayMessage(`${outcome.name} wins!`);
       }
+      displayController.handleGameEnd(outcome);
     }
+  }
+
+  function handleGameEnd(outcome) {
+    // This function will stop interaction, update scores, and show the restart button.
+
+    // Lav DOM element til at vise score
+    // Når en spiller vinder eller game er tied skal boardet fjernes fra DOM
+    // Når boardet er fjernet skal en Go next-knap implementeres
+    // Den GO next-knap skal fjernes når spil er i gang
+    gamestate.updateScores(outcome); // <-- Call the function you just created!
+    // Next steps go here...
   }
 
   return {
     renderBoard,
-    updateCell,
     displayMessage,
     handleClick,
+    handleGameEnd,
   };
 })();
 
