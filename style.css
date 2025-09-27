@@ -100,13 +100,15 @@ h1.title-header {
     font-weight: 800;
     font-size: 16px;
     padding: 8px 8px;
-    border: 1px solid var(--text-color);
+    border: 2px solid rgba(242, 167, 148, 0.5);
+    animation: borderPulse 2s infinite ease-in-out; 
     border-radius: 8px;
     transition: cubic-bezier(0.075, 0.82, 0.165, 1) 0.33s;
     &:hover {
         color:lightgray;
         border-color: lightgray;
         cursor: pointer;
+        animation-play-state: paused; 
     }
 }
 
@@ -190,4 +192,16 @@ h1.title-header {
 
 .animate-game-area {
     animation: slideInUp 0.5s ease-out forwards;
+}
+
+@keyframes borderPulse {
+    0% {
+        border-color: rgba(242, 167, 148, 0.5); /* var(--text-color) with 50% opacity */
+    }
+    50% {
+        border-color: rgba(242, 167, 148, 1);  /* var(--text-color) with 100% opacity */
+    }
+    100% {
+        border-color: rgba(242, 167, 148, 0.5); /* Back to 50% opacity */
+    }
 }
