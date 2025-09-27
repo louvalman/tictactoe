@@ -52,7 +52,7 @@ h1.title-header {
 
 .button {
     font-weight: normal !important;
-    font-size: 24px;
+    font-size: 20px;
     padding: 8px 8px;
     border: 1px solid var(--text-color);
     border-radius: 8px;

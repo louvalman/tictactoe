@@ -285,7 +285,7 @@ let displayController = (function () {
     const gameContainer = document.getElementById('game-container');
 
     const nextBtn = document.createElement('div');
-    nextBtn.textContent = 'Play Next Round';
+    nextBtn.textContent = 'play next round';
     nextBtn.classList.add('button');
     nextBtn.id = 'next-round-button';
 
