@@ -31,15 +31,24 @@ let gameboard = (function () {
     gameboard.board[row][column] = token;
   }
 
+  function resetBoard() {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        board[i][j] = 0;
+      }
+    }
+  }
+
   return {
     rows,
     columns,
     board,
     placeMark,
+    resetBoard,
   };
 })();
 
-// Dictate how the game is played
+// Establish game elements, and dictate how the game is played
 let gamestate = (function () {
   let player1 = createPlayer('player one', 1);
   let player2 = createPlayer('player two', 2);
@@ -202,6 +211,13 @@ let gamestate = (function () {
     }
   }
 
+  function getScores() {
+    return {
+      player1: scores.player1,
+      player2: scores.player2,
+    };
+  }
+
   // Make sure gamestate exposes needed variables and functions
   return {
     startingPlayer,
@@ -211,13 +227,14 @@ let gamestate = (function () {
     getPlayerTurn,
     checkForWin,
     playRound,
-    scores,
     updateScores,
+    getScores,
   };
 })();
 
-// Show the board in the UI when the game is started
+// Call the gamestate elements to control the display and UI
 let displayController = (function () {
+  // Show the board in the UI when the game is started
   function renderBoard() {
     let gameBoard = document.getElementById('game-board');
     for (let i = 0; i < gameboard.rows; i++) {
@@ -235,44 +252,119 @@ let displayController = (function () {
     gameBoard.classList.add('game-board');
   }
 
+  // Display a message with the game state
   function displayMessage(message) {
     const messageDisplay = document.getElementById('message');
     messageDisplay.textContent = message;
   }
 
-  // Read coordinates, check if cell is empty in order to run playRound logic (getToken of player whose turn it is, place it in internal gamestate and checkForWin), then update UI/DOM with token ID on html element of targeted cell which CSS renders to icon. Display message based on outcome.
+  // Display the score
+  function updateScoreDisplay() {
+    const gameContainer = document.getElementById('game-container');
+    const players = gamestate.getPlayers();
+    const scores = gamestate.getScores();
+
+    let scoreDisplay = document.getElementById('scoreboard');
+
+    // Create scoreboard element if it doesn't exist
+    if (!scoreDisplay) {
+      scoreDisplay = document.createElement('div');
+      scoreDisplay.id = 'scoreboard';
+      scoreDisplay.classList.add('scoreboard');
+      // Place it before the game board to keep them separated
+      const gameBoard = document.getElementById('game-board');
+      gameContainer.insertBefore(scoreDisplay, gameBoard);
+    }
+
+    // Update the scoreboard content
+    scoreDisplay.textContent = `${players.playerOne.name}: ${scores.player1} | ${players.playerTwo.name}: ${scores.player2}`;
+  }
+
+  // Create the button that starts a new round
+  function showNextRoundButton() {
+    const gameContainer = document.getElementById('game-container');
+
+    const nextBtn = document.createElement('div');
+    nextBtn.textContent = 'Play Next Round';
+    nextBtn.classList.add('button');
+    nextBtn.id = 'next-round-button';
+
+    // Attach the reset handler (We define this function next)
+    nextBtn.addEventListener('click', resetGame);
+
+    gameContainer.appendChild(nextBtn);
+  }
+
+  // Reset game function
+  function resetGame() {
+    // Clear the internal game board state and board UI
+    gameboard.resetBoard();
+    clearBoard();
+    document.getElementById('next-round-button').remove();
+    renderBoard();
+
+    // Reset the starting player (change turn) and message for the new round
+    gamestate.changeTurn();
+    displayController.displayMessage(
+      `${gamestate.getPlayerTurn().name}'s turn`
+    );
+  }
+
+  // Make sure the game proceeds when a cell is clicked
   function handleClick(e) {
+    // Read coordinates
     const row = parseInt(e.target.dataset.row);
     const column = parseInt(e.target.dataset.column);
 
+    // Check if cell is empty in order to run playRound logic with coordinates (getToken of player whose turn it is, place it in internal gamestate and checkForWin)
     if (gameboard.board[row][column] == 0) {
-      //
       const outcome = gamestate.playRound(row, column);
-
+      // Then update UI/DOM with token ID on html element of targeted cell which CSS renders to icon.
       e.target.dataset.token = gameboard.board[row][column];
 
+      // Display message and handle the end of a game based on the outcome
       if (outcome == null) {
         displayController.displayMessage(
           `${gamestate.getPlayerTurn().name}'s turn`
         );
-      } else if (outcome == 'Tie') {
-        displayController.displayMessage('you tied it up!');
       } else {
-        displayController.displayMessage(`${outcome.name} wins!`);
+        if (outcome == 'Tie') {
+          displayController.displayMessage('you tied it up!');
+        } else {
+          displayController.displayMessage(`${outcome.name} wins!`);
+        }
+        displayController.handleGameEnd(outcome);
       }
-      displayController.handleGameEnd(outcome);
     }
   }
 
-  function handleGameEnd(outcome) {
-    // This function will stop interaction, update scores, and show the restart button.
+  // When a game is over, make sure player's can't place additional tokens
+  function removeCellListeners() {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach((cell) => {
+      cell.removeEventListener('click', handleClick);
+    });
+  }
 
-    // Lav DOM element til at vise score
-    // Når en spiller vinder eller game er tied skal boardet fjernes fra DOM
-    // Når boardet er fjernet skal en Go next-knap implementeres
-    // Den GO next-knap skal fjernes når spil er i gang
-    gamestate.updateScores(outcome); // <-- Call the function you just created!
-    // Next steps go here...
+  // When a game is over, remove the game-board elements from the DOM
+  function clearBoard() {
+    const gameBoard = document.getElementById('game-board');
+    gameBoard.innerHTML = '';
+  }
+
+  // When a winner is found ..
+  function handleGameEnd(outcome) {
+    // Update the score
+    gamestate.updateScores(outcome);
+
+    // Update the score display
+    updateScoreDisplay();
+
+    // Make sure no more tokens can be placed
+    removeCellListeners();
+
+    // Show next button
+    showNextRoundButton();
   }
 
   return {
@@ -280,6 +372,9 @@ let displayController = (function () {
     displayMessage,
     handleClick,
     handleGameEnd,
+    updateScoreDisplay,
+    showNextRoundButton,
+    resetGame,
   };
 })();
 
@@ -339,6 +434,7 @@ startBtn.addEventListener('click', function () {
   continueBtn.addEventListener('click', function () {
     gamestate.setPlayerNames(getNameOne.value, getNameTwo.value);
     displayController.renderBoard();
+    displayController.updateScoreDisplay();
     nameContainer.remove();
     continueBtn.remove();
     displayController.displayMessage(`${gamestate.startingPlayer.name}'s turn`);

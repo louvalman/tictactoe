@@ -60,6 +60,7 @@ h1.title-header {
     &:hover {
         color:lightgray;
         border-color: lightgray;
+        cursor: pointer;
     }
 }
 
