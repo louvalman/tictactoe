@@ -95,74 +95,70 @@ let gamestate = (function () {
   function checkForWin() {
     let winner = null;
     const board = gameboard.board;
+    let winLine = null;
 
-    // Check rows
+    // Check Rows (Horizontal Wins)
     for (let i = 0; i < gameboard.rows; i++) {
       if (
-        board[i][0] === player1.token &&
-        board[i][1] === player1.token &&
-        board[i][2] === player1.token
+        board[i][0] !== 0 &&
+        board[i][0] === board[i][1] &&
+        board[i][1] === board[i][2]
       ) {
-        winner = player1;
-        return winner;
-      } else if (
-        board[i][0] === player2.token &&
-        board[i][1] === player2.token &&
-        board[i][2] === player2.token
-      ) {
-        winner = player2;
-        return winner;
+        winner = board[i][0] === player1.token ? player1 : player2;
+        winLine = [
+          [i, 0],
+          [i, 1],
+          [i, 2],
+        ];
+        return { winner, line: winLine };
       }
-    }
-    // Check columns
-    for (let j = 0; j < gameboard.columns; j++) {
-      if (
-        board[0][j] === player1.token &&
-        board[1][j] === player1.token &&
-        board[2][j] === player1.token
-      ) {
-        winner = player1;
-        return winner;
-      } else if (
-        board[0][j] === player2.token &&
-        board[1][j] === player2.token &&
-        board[2][j] === player2.token
-      ) {
-        winner = player2;
-        return winner;
-      }
-    }
-    // Check diagonals (top left to bottom right and top right to bottom left)
-    if (
-      board[0][0] === player1.token &&
-      board[1][1] === player1.token &&
-      board[2][2] === player1.token
-    ) {
-      winner = player1;
-      return winner;
-    } else if (
-      board[0][0] === player2.token &&
-      board[1][1] === player2.token &&
-      board[2][2] === player2.token
-    ) {
-      winner = player2;
-      return winner;
     }
 
+    // Check Columns (Vertical Wins)
+    for (let j = 0; j < gameboard.columns; j++) {
+      if (
+        board[0][j] !== 0 &&
+        board[0][j] === board[1][j] &&
+        board[1][j] === board[2][j]
+      ) {
+        winner = board[0][j] === player1.token ? player1 : player2;
+        winLine = [
+          [0, j],
+          [1, j],
+          [2, j],
+        ];
+        return { winner, line: winLine };
+      }
+    }
+
+    // Check Diagonals (Top-Left to Bottom-Right)
     if (
-      board[0][2] === player1.token &&
-      board[1][1] === player1.token &&
-      board[2][0] === player1.token
+      board[0][0] !== 0 &&
+      board[0][0] === board[1][1] &&
+      board[1][1] === board[2][2]
     ) {
-      winner = player1;
-      return winner;
-    } else if (
-      board[0][2] === player2.token &&
-      board[1][1] === player2.token &&
-      board[2][0] === player2.token
+      winner = board[0][0] === player1.token ? player1 : player2;
+      winLine = [
+        [0, 0],
+        [1, 1],
+        [2, 2],
+      ];
+      return { winner, line: winLine };
+    }
+
+    // Check Diagonals (Top-Right to Bottom-Left)
+    if (
+      board[0][2] !== 0 &&
+      board[0][2] === board[1][1] &&
+      board[1][1] === board[2][0]
     ) {
-      winner = player2;
-      return winner;
+      winner = board[0][2] === player1.token ? player1 : player2;
+      winLine = [
+        [0, 2],
+        [1, 1],
+        [2, 0],
+      ];
+      return { winner, line: winLine };
     }
 
     // Check for tie
@@ -178,10 +174,11 @@ let gamestate = (function () {
 
     // If winner has not been found yet, and board is full, then game is declared a tie
     if (isBoardFull === true) {
-      winner = 'Tie';
+      return { winner: 'Tie', line: null };
     }
 
-    return winner;
+    // If no win and no tie, the game continues.
+    return { winner: null, line: null };
   }
 
   // Get token of current player, place token on internal gamestate, checkForWin, if game isn't over changeTurns
@@ -189,13 +186,16 @@ let gamestate = (function () {
     const currentToken = getPlayerTurn().token;
     gameboard.placeMark(row, column, currentToken);
 
-    const gameResult = checkForWin();
+    // DESTRUCTURE the result from checkForWin
+    const result = checkForWin();
+    const gameResult = result.winner;
 
     if (gameResult === null) {
       changeTurn();
     }
 
-    return gameResult;
+    // Return the full result object for displayController to use the line coordinates
+    return result;
   }
 
   // Track the score
@@ -260,24 +260,49 @@ let displayController = (function () {
 
   // Display the score
   function updateScoreDisplay() {
-    const gameContainer = document.getElementById('game-container');
+    const gameArea = document.getElementById('game-area');
     const players = gamestate.getPlayers();
     const scores = gamestate.getScores();
 
     let scoreDisplay = document.getElementById('scoreboard');
+    let spacerDisplay = document.getElementById('scoreboard-spacer');
 
-    // Create scoreboard element if it doesn't exist
+    // Create a hidden ghost-spacer-scoreboard to the left of board (to center board) and a visible scoreboard to the right of board if they don't exist
     if (!scoreDisplay) {
+      // Create the invisible spacer (must be created first)
+      spacerDisplay = document.createElement('div');
+      spacerDisplay.id = 'scoreboard-spacer';
+      spacerDisplay.classList.add('scoreboard', 'scoreboard-spacer'); // Apply both classes
+
+      // Create the visible scoreboard
       scoreDisplay = document.createElement('div');
       scoreDisplay.id = 'scoreboard';
       scoreDisplay.classList.add('scoreboard');
-      // Place it before the game board to keep them separated
-      const gameBoard = document.getElementById('game-board');
-      gameContainer.insertBefore(scoreDisplay, gameBoard);
+
+      // Create and append the scoreboard title
+      const title = document.createElement('h3');
+      title.classList.add('scoreboard-title');
+      title.textContent = 'scoreboard';
+      scoreDisplay.appendChild(title);
+
+      // Create the score content container (to separate title from scores)
+      const scoreContent = document.createElement('div');
+      scoreContent.id = 'score-content';
+      scoreDisplay.appendChild(scoreContent);
+
+      const gameBoardElement = document.getElementById('game-board');
+
+      // Insert spacer before the game board
+      gameArea.insertBefore(spacerDisplay, gameBoardElement);
+
+      // Insert visible scoreboard after the game board
+      gameArea.appendChild(scoreDisplay);
     }
 
-    // Update the scoreboard content
-    scoreDisplay.textContent = `${players.playerOne.name}: ${scores.player1} | ${players.playerTwo.name}: ${scores.player2}`;
+    // Define content of scoreboard
+    const content = `${players.playerOne.name}: ${scores.player1}<br>${players.playerTwo.name}: ${scores.player2}`;
+    document.getElementById('score-content').innerHTML = content;
+    spacerDisplay.innerHTML = `<h3 class="scoreboard-title">scoreboard</h3><div id="dummy-score-content">${content}</div>`;
   }
 
   // Create the button that starts a new round
@@ -293,6 +318,21 @@ let displayController = (function () {
     nextBtn.addEventListener('click', resetGame);
 
     gameContainer.appendChild(nextBtn);
+  }
+
+  // Highlight the winning line
+  function highlightWin(lineCoordinates) {
+    const cells = document.querySelectorAll('.cell');
+
+    lineCoordinates.forEach(([row, column]) => {
+      const winningCell = Array.from(cells).find(
+        (cell) => cell.dataset.row == row && cell.dataset.column == column
+      );
+
+      if (winningCell) {
+        winningCell.classList.add('winning-cell');
+      }
+    });
   }
 
   // Reset game function
@@ -318,7 +358,9 @@ let displayController = (function () {
 
     // Check if cell is empty in order to run playRound logic with coordinates (getToken of player whose turn it is, place it in internal gamestate and checkForWin)
     if (gameboard.board[row][column] == 0) {
-      const outcome = gamestate.playRound(row, column);
+      const result = gamestate.playRound(row, column);
+      const outcome = result.winner;
+
       // Then update UI/DOM with token ID on html element of targeted cell which CSS renders to icon.
       e.target.dataset.token = gameboard.board[row][column];
 
@@ -332,6 +374,7 @@ let displayController = (function () {
           displayController.displayMessage('you tied it up!');
         } else {
           displayController.displayMessage(`${outcome.name} wins!`);
+          displayController.highlightWin(result.line);
         }
         displayController.handleGameEnd(outcome);
       }
@@ -375,6 +418,7 @@ let displayController = (function () {
     updateScoreDisplay,
     showNextRoundButton,
     resetGame,
+    highlightWin,
   };
 })();
 
@@ -387,8 +431,10 @@ startBtn.addEventListener('click', function () {
   startBtn.remove();
   startMsg.remove();
 
+  const gameArea = document.getElementById('game-area');
+
   const nameContainer = document.createElement('div');
-  gameContainer.appendChild(nameContainer);
+  gameContainer.insertBefore(nameContainer, gameArea);
   nameContainer.classList.add('name-container');
 
   const inputContainerOne = document.createElement('div');
@@ -399,7 +445,7 @@ startBtn.addEventListener('click', function () {
   inputContainerOne.appendChild(getNameOneLabel);
   getNameOneLabel.classList.add('input-label');
   getNameOneLabel.setAttribute('for', 'name-one');
-  getNameOneLabel.textContent = 'Player one name';
+  getNameOneLabel.textContent = 'player one name';
 
   const getNameOne = document.createElement('input');
   inputContainerOne.appendChild(getNameOne);
@@ -416,7 +462,7 @@ startBtn.addEventListener('click', function () {
   inputContainerTwo.appendChild(getNameTwoLabel);
   getNameTwoLabel.classList.add('input-label');
   getNameTwoLabel.setAttribute('for', 'name-two');
-  getNameTwoLabel.textContent = 'Player two name';
+  getNameTwoLabel.textContent = 'player two name';
 
   const getNameTwo = document.createElement('input');
   inputContainerTwo.appendChild(getNameTwo);
@@ -433,11 +479,29 @@ startBtn.addEventListener('click', function () {
 
   continueBtn.addEventListener('click', function () {
     gamestate.setPlayerNames(getNameOne.value, getNameTwo.value);
-    displayController.renderBoard();
-    displayController.updateScoreDisplay();
-    nameContainer.remove();
-    continueBtn.remove();
-    displayController.displayMessage(`${gamestate.startingPlayer.name}'s turn`);
+
+    // Animation start - fade out the input section
+    nameContainer.classList.add('fade-out');
+    continueBtn.classList.add('fade-out');
+
+    // Wait 400ms (matching the intended CSS fade-out duration) before rendering the board
+    setTimeout(() => {
+      // Render the board and score display
+      displayController.renderBoard();
+      displayController.updateScoreDisplay();
+
+      // Trigger the game board fade-in
+      const gameAreaElement = document.getElementById('game-area');
+      gameAreaElement.classList.add('animate-game-area');
+
+      // Clean up (remove inputs/button)
+      nameContainer.remove();
+      continueBtn.remove();
+
+      displayController.displayMessage(
+        `${gamestate.startingPlayer.name}'s turn`
+      );
+    }, 400);
   });
 });
 

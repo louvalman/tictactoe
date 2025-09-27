@@ -1,7 +1,7 @@
 :root {
     font-family: "Founders Grotesk", sans-serif;
     background-color: #B80C09;
-    --text-color:#F3F7F0;
+    --text-color:#f2a794;
     --transition-cubic: all 0.3s cubic-bezier(0.65, 0.3, 0.73, 0.76);
     --box-shadow-cards: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
@@ -24,6 +24,7 @@ body {
     justify-content: center;
     flex-direction: column;
     gap:24px;
+    animation: slideInUp 0.5s ease-out forwards;
 }
 
 h1 {
@@ -42,17 +43,62 @@ h1.title-header {
     display: flex;
     flex-direction: column;
     gap:24px;
+
+    animation: slideInUp 0.5s ease-out forwards;
 }
 
 .input-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap:8px;
 }
 
+#game-area {
+    display: flex;
+    flex-direction: row; 
+    gap: 40px; 
+    align-items: flex-start;
+
+    opacity: 0; 
+}
+
+.scoreboard {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border: 1px solid var(--text-color);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.scoreboard-title {
+    font-size: 14px; 
+    font-weight: 400; 
+    text-align: center;
+    margin-bottom: 8px; 
+    padding-bottom: 4px; /* Separator line beneath title */
+    border-bottom: 1px solid var(--text-color);
+}
+
+#score-content {
+    font-weight: 200;
+    font-size: 14px;
+}
+
+#scoreboard-spacer {
+    visibility: hidden;
+    pointer-events: none;
+    border-color: transparent;
+    background-color: transparent;
+    text-align: left;
+}
+
 .button {
-    font-weight: normal !important;
-    font-size: 20px;
+    font-weight: 800;
+    font-size: 16px;
     padding: 8px 8px;
     border: 1px solid var(--text-color);
     border-radius: 8px;
@@ -65,13 +111,13 @@ h1.title-header {
 }
 
 #start-message {
-    font-weight: lighter;
-    font-size: 20px;
+    font-weight: 200;
+    font-size: 14px;
 }
 
 #message {
-    font-weight: lighter;
-    font-size: 18px;
+    font-weight: 200;
+    font-size: 14px;
 }
 
 .input-field {
@@ -82,14 +128,15 @@ h1.title-header {
 }
 
 .input-label {
-    font-weight: 400;
-    font-size: 18px;
+    font-weight: 200;
+    font-size: 14px;
 }
 
 .game-board {
     display: grid;
     grid-template:75px 75px 75px / 75px 75px 75px;
     border: 1px solid var(--text-color);
+    padding: 2px;
 }
 
 .cell {
@@ -97,6 +144,20 @@ h1.title-header {
     align-items: center;
     justify-content: center;
     border: 1px solid var(--text-color);
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1) 0.33s;
+    margin:4px;
+    background-color: #B80C09;
+    &:hover {
+        background-color: lightcoral;
+    &:active {
+        background-color: darkred;
+    }
+
+    }
+}
+
+.winning-cell {
+    border: 4px solid lightgreen;
 }
 
 .cell[data-token="1"]::before {
@@ -108,4 +169,25 @@ h1.title-header {
 .cell[data-token="2"]::before {
     content: "🥫";
     font-size: 32px;
+}
+
+.fade-out {
+    opacity: 0 !important;
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    pointer-events: none;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-game-area {
+    animation: slideInUp 0.5s ease-out forwards;
 }
