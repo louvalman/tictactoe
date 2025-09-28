@@ -300,7 +300,7 @@ let displayController = (function () {
     }
 
     // Define content of scoreboard
-    const content = `${players.playerOne.name}: ${scores.player1}<br>${players.playerTwo.name}: ${scores.player2}`;
+    const content = `${players.playerOne.name}: <b>${scores.player1}</b><br>${players.playerTwo.name}: <b>${scores.player2}</b>`;
     document.getElementById('score-content').innerHTML = content;
     spacerDisplay.innerHTML = `<h3 class="scoreboard-title">scoreboard</h3><div id="dummy-score-content">${content}</div>`;
   }
